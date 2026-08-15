@@ -100,14 +100,16 @@ SENSOR_TYPES = {
         "accuracy_decimals": 0,
     },
     # Additional missing sensor types from NUT analysis
+    # Deliberately no device_class on the charge thresholds: they are
+    # configuration values (the % at which the UPS declares low battery),
+    # not battery levels. DEVICE_CLASS_BATTERY makes Home Assistant treat
+    # them as a real battery and fire low-battery alerts on the threshold.
     "battery_charge_low": {
         "unit": UNIT_PERCENT,
-        "device_class": DEVICE_CLASS_BATTERY,
         "accuracy_decimals": 0,
     },
     "battery_charge_warning": {
         "unit": UNIT_PERCENT,
-        "device_class": DEVICE_CLASS_BATTERY,
         "accuracy_decimals": 0,
     },
     "battery_runtime_low": {
