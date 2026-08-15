@@ -32,7 +32,10 @@ static constexpr size_t MAX_COMMAND_LENGTH = 256;
 static constexpr size_t MAX_RESPONSE_LENGTH = 2048;
 static constexpr uint8_t DEFAULT_MAX_CLIENTS = 4;
 static constexpr uint8_t MAX_LOGIN_ATTEMPTS = 3;
-static constexpr uint32_t CLIENT_TIMEOUT_MS = 60000;  // 60 seconds
+// Idle timeout must comfortably exceed common NUT poll intervals: Home
+// Assistant polls every 60s over a persistent connection, so a 60s timeout
+// races the poll and can drop the connection right before the next poll.
+static constexpr uint32_t CLIENT_TIMEOUT_MS = 300000;  // 5 minutes
 
 // NUT protocol version
 static constexpr const char* NUT_VERSION = "2.8.0";

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <cinttypes>
 
 #ifdef USE_ESP32
 #include "lwip/err.h"
@@ -269,12 +270,21 @@ void NutServerComponent::disconnect_client(NutClient &client) {
 }
 
 void NutServerComponent::cleanup_inactive_clients() {
-  uint32_t now = millis();
   std::lock_guard<std::mutex> lock(clients_mutex_);
-  
+  // Sample the clock under the lock: last_activity is written by the server
+  // task under this same mutex, so 'now' cannot be older than any stored
+  // timestamp. Sampling before the lock let a client connect between the
+  // sample and the scan; the unsigned subtraction then underflowed and a
+  // milliseconds-old connection was reaped as "timed out".
+  const uint32_t now = millis();
+
   for (auto &client : clients_) {
-    if (client.is_active() && (now - client.last_activity) > CLIENT_TIMEOUT_MS) {
-      ESP_LOGD(TAG, "Client timeout, disconnecting");
+    if (!client.is_active())
+      continue;
+    // Signed compare is wrap-safe across millis() rollover as well.
+    if (static_cast<int32_t>(now - client.last_activity) > static_cast<int32_t>(CLIENT_TIMEOUT_MS)) {
+      ESP_LOGD(TAG, "Client %s idle for %" PRIu32 " ms, disconnecting",
+               client.remote_ip.c_str(), now - client.last_activity);
       disconnect_client(client);
     }
   }
