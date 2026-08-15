@@ -26,6 +26,8 @@ struct PowerData {
   
   // Power status information
   std::string status{};                // Power status text (Online, On Battery, etc.)
+  bool overload{false};                // Overload as reported by the UPS; false when
+                                       // clear or when not reported this cycle
   
   // Power quality indicators
   bool input_voltage_valid() const {

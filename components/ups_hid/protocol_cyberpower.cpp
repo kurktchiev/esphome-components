@@ -773,7 +773,8 @@ void CyberPowerProtocol::parse_overload_report(const HidReport &report, UpsData 
   // Offset 1 means it's in the second byte of the report
   uint8_t overload_byte = report.data[1];
   bool overload = (overload_byte & 0x01) != 0;  // Check bit 0 (Offset 1 in NUT = bit 0)
-  
+  data.power.overload = overload;
+
   if (overload) {
     data.power.status += " - Overload";
     ESP_LOGW(CP_TAG, "CyberPower UPS OVERLOAD detected (raw: 0x%02X)", overload_byte);

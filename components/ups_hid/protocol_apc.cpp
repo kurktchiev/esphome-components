@@ -545,6 +545,7 @@ void ApcReportParser::parse_present_status_report(const HidReport &report, UpsDa
     data.battery.status = battery_status::NOT_PRESENT;
   }
   
+  data.power.overload = overload;
   if (overload) {
     data.power.status += " - Overload";
   }

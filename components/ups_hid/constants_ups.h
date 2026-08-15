@@ -186,6 +186,8 @@ namespace sensor_type {
     static constexpr const char* INPUT_TRANSFER_LOW = "input_transfer_low";
     static constexpr const char* INPUT_TRANSFER_HIGH = "input_transfer_high";
     static constexpr const char* BATTERY_RUNTIME_LOW = "battery_runtime_low";
+    static constexpr const char* BATTERY_CHARGE_LOW = "battery_charge_low";
+    static constexpr const char* BATTERY_CHARGE_WARNING = "battery_charge_warning";
     static constexpr const char* UPS_REALPOWER_NOMINAL = "ups_realpower_nominal";
     static constexpr const char* UPS_DELAY_SHUTDOWN = "ups_delay_shutdown";
     static constexpr const char* UPS_DELAY_START = "ups_delay_start";
@@ -201,6 +203,7 @@ namespace binary_sensor_type {
     static constexpr const char* ON_BATTERY = "on_battery";
     static constexpr const char* LOW_BATTERY = "low_battery";
     static constexpr const char* OVERLOAD = "overload";
+    static constexpr const char* FAULT = "fault";
     static constexpr const char* BUCK = "buck";
     static constexpr const char* BOOST = "boost";
     static constexpr const char* CHARGING = "charging";

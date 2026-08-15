@@ -12,6 +12,7 @@
 #include "protocol_generic.h"
 #include "esphome/core/log.h"
 #include "esphome/core/application.h"
+#include "esphome/core/helpers.h"
 #include <functional>
 #include <cmath>
 
@@ -311,6 +312,10 @@ void UpsHidComponent::update_sensors() {
       value = ups_data_.power.input_transfer_high;
     } else if (type == sensor_type::BATTERY_RUNTIME_LOW && !std::isnan(ups_data_.battery.runtime_low)) {
       value = ups_data_.battery.runtime_low;
+    } else if (type == sensor_type::BATTERY_CHARGE_LOW && !std::isnan(ups_data_.battery.charge_low)) {
+      value = ups_data_.battery.charge_low;
+    } else if (type == sensor_type::BATTERY_CHARGE_WARNING && !std::isnan(ups_data_.battery.charge_warning)) {
+      value = ups_data_.battery.charge_warning;
     } else if (type == sensor_type::UPS_REALPOWER_NOMINAL && !std::isnan(ups_data_.power.realpower_nominal)) {
       value = ups_data_.power.realpower_nominal;
     } else if (type == sensor_type::UPS_DELAY_SHUTDOWN && !std::isnan(ups_data_.config.delay_shutdown)) {
@@ -339,16 +344,37 @@ void UpsHidComponent::update_sensors() {
     const std::string& type = sensor_pair.first;
     binary_sensor::BinarySensor* sensor = sensor_pair.second;
     
-    bool state = false;
-    
-    if (type == binary_sensor_type::ONLINE && ups_data_.power.input_voltage_valid()) {
-      state = true;
-    } else if (type == binary_sensor_type::ON_BATTERY && ups_data_.power.input_voltage_valid()) {
-      state = false; // Opposite of online
+    // Derive each type from the protocol-reported state. This runs under
+    // data_mutex_, so the public is_online()/is_charging() helpers (which
+    // re-take that lock) must not be called here. Types whose source data
+    // is missing this cycle are skipped so the entity stays "unknown"
+    // instead of publishing a fabricated value.
+    bool state;
+
+    if (type == binary_sensor_type::ONLINE) {
+      if (ups_data_.power.status.empty())
+        continue;
+      state = str_startswith(ups_data_.power.status, status::ONLINE);
+    } else if (type == binary_sensor_type::ON_BATTERY) {
+      if (ups_data_.power.status.empty())
+        continue;
+      state = str_startswith(ups_data_.power.status, status::ON_BATTERY);
     } else if (type == binary_sensor_type::LOW_BATTERY) {
       state = ups_data_.battery.is_low();
+    } else if (type == binary_sensor_type::CHARGING) {
+      if (ups_data_.battery.status.empty())
+        continue;
+      state = str_startswith(ups_data_.battery.status, battery_status::CHARGING);
+    } else if (type == binary_sensor_type::OVERLOAD) {
+      state = ups_data_.power.overload;
+    } else if (type == binary_sensor_type::FAULT) {
+      state = ups_data_.power.is_input_out_of_range() ||
+              (!ups_data_.power.is_valid() && !ups_data_.battery.is_valid());
+    } else {
+      // Type not derivable from UPS data; leave the entity untouched.
+      continue;
     }
-    
+
     sensor->publish_state(state);
   }
 #endif
