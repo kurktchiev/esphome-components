@@ -5,8 +5,8 @@ from esphome.const import (
     CONF_TYPE,
     DEVICE_CLASS_CONNECTIVITY,
     DEVICE_CLASS_BATTERY,
+    DEVICE_CLASS_BATTERY_CHARGING,
     DEVICE_CLASS_PROBLEM,
-    DEVICE_CLASS_POWER,
 )
 
 from . import ups_hid_ns, UpsHidComponent, CONF_UPS_HID_ID
@@ -17,12 +17,17 @@ UpsHidBinarySensor = ups_hid_ns.class_(
     "UpsHidBinarySensor", binary_sensor.BinarySensor, cg.Component
 )
 
+# Home Assistant semantics for binary device classes: BATTERY means
+# "on = battery LOW", BATTERY_CHARGING means "on = charging", PROBLEM means
+# "on = problem detected". Only low_battery may use BATTERY — putting it on
+# charging/on_battery makes HA low-battery blueprints alert whenever the UPS
+# charges or runs on battery.
 BINARY_SENSOR_TYPES = {
     "online": {
         "device_class": DEVICE_CLASS_CONNECTIVITY,
     },
     "on_battery": {
-        "device_class": DEVICE_CLASS_BATTERY,
+        "device_class": DEVICE_CLASS_PROBLEM,
     },
     "low_battery": {
         "device_class": DEVICE_CLASS_BATTERY,
@@ -31,10 +36,10 @@ BINARY_SENSOR_TYPES = {
         "device_class": DEVICE_CLASS_PROBLEM,
     },
     "overload": {
-        "device_class": DEVICE_CLASS_POWER,
+        "device_class": DEVICE_CLASS_PROBLEM,
     },
     "charging": {
-        "device_class": DEVICE_CLASS_BATTERY,
+        "device_class": DEVICE_CLASS_BATTERY_CHARGING,
     },
 }
 
