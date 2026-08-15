@@ -212,23 +212,32 @@ The component is compatible with GUI monitoring tools like `nut-monitor`. Config
 - Username/Password: If authentication is enabled
 
 ### Home Assistant NUT Integration
-You can use Home Assistant's NUT integration to monitor the UPS:
+
+Home Assistant's NUT integration is configured through the UI (the old
+`sensor: platform: nut` YAML syntax was removed from HA years ago):
+Settings → Devices & Services → Add Integration → "Network UPS Tools (NUT)",
+then enter the ESP32's host, the configured port (default 3493), and the
+username/password if authentication is enabled. Instant commands (beeper,
+battery tests) appear as button entities.
+
+#### Auto-discovery (mDNS/zeroconf)
+
+Home Assistant discovers NUT servers that advertise `_nut._tcp` via
+mDNS — the same service real NUT servers publish through Avahi. ESPHome
+can advertise it with the `mdns` component (the port must match the
+`nut_server` port):
 
 ```yaml
-# Home Assistant configuration.yaml
-sensor:
-  - platform: nut
-    host: 192.168.1.100
-    port: 3493
-    username: monitor
-    password: ups123
-    resources:
-      - battery.charge
-      - battery.runtime
-      - input.voltage
-      - ups.load
-      - ups.status
+mdns:
+  services:
+    - service: "_nut"
+      protocol: "_tcp"
+      port: 3493
 ```
+
+With this block the device shows up under Settings → Devices & Services
+as a discovered NUT server; only the credentials need to be entered.
+`configs/nut_server.yaml` includes this advertisement.
 
 ### Grafana + Prometheus
 Use the NUT exporter for Prometheus to collect metrics:

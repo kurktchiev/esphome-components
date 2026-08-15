@@ -27,6 +27,15 @@ nut_server:
   max_clients: ${nut_max_clients}
   ups_name: "${nut_ups_name}"            # Custom NUT protocol name (optional)
 
+# Advertise the NUT service via mDNS/zeroconf — the same _nut._tcp service
+# real NUT servers publish through Avahi. Lets Home Assistant's NUT
+# integration auto-discover this server (Settings -> Devices & Services).
+mdns:
+  services:
+    - service: "_nut"
+      protocol: "_tcp"
+      port: ${nut_port}
+
 # Static IP configuration (uncomment to enable)
 # Recommended for NUT server to ensure consistent network access
 # Uncomment the following wifi section and customize the IP addresses:
